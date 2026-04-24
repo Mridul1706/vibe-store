@@ -23,10 +23,20 @@ export function Header() {
   const { user, isLoading, signOut } = useAuth()
   const [mounted, setMounted] = useState(false)
   const [cartOpen, setCartOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
 
   useEffect(() => {
     setMounted(true)
   }, [])
+
+  const handleSignOut = async () => {
+    setIsSigningOut(true)
+    try {
+      await signOut()
+    } finally {
+      setIsSigningOut(false)
+    }
+  }
 
   return (
     <>
@@ -113,11 +123,12 @@ export function Header() {
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
-                      onClick={() => signOut()}
+                      onClick={handleSignOut}
+                      disabled={isSigningOut}
                       className="text-destructive focus:text-destructive cursor-pointer"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
+                      {isSigningOut ? "Signing out…" : "Sign Out"}
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

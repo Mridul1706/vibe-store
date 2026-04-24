@@ -16,6 +16,17 @@ export const metadata: Metadata = {
   title: 'VIBE Store | Modern Ecommerce',
   description: 'Discover curated products across electronics, fashion, home & accessories',
   generator: 'v0.app',
+  openGraph: {
+    title: 'VIBE Store | Modern Ecommerce',
+    description: 'Discover curated products across electronics, fashion, home & accessories',
+    type: 'website',
+    siteName: 'VIBE Store',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'VIBE Store | Modern Ecommerce',
+    description: 'Discover curated products across electronics, fashion, home & accessories',
+  },
   icons: {
     icon: [
       {

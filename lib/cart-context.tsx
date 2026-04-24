@@ -1,7 +1,9 @@
 "use client"
 
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react"
+import { toast } from "sonner"
 import { CartItem, Product } from "./types"
+import { CART_STORAGE_KEY } from "./constants"
 
 interface CartContextType {
   items: CartItem[]
@@ -15,8 +17,6 @@ interface CartContextType {
 
 const CartContext = createContext<CartContextType | undefined>(undefined)
 
-const CART_STORAGE_KEY = "ecommerce-cart"
-
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
   const [isLoaded, setIsLoaded] = useState(false)
@@ -28,7 +28,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(stored)
         setItems(parsed)
-      } catch {
+      } catch (error) {
+        console.error("Failed to load cart from localStorage:", error)
         localStorage.removeItem(CART_STORAGE_KEY)
       }
     }
@@ -38,11 +39,19 @@ export function CartProvider({ children }: { children: ReactNode }) {
   // Save cart to localStorage whenever it changes
   useEffect(() => {
     if (isLoaded) {
-      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+      try {
+        localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+      } catch (error) {
+        console.error("Failed to save cart to localStorage:", error)
+      }
     }
   }, [items, isLoaded])
 
   const addItem = (product: Product, quantity = 1) => {
+    if (!product.inStock) {
+      toast.error(`"${product.name}" is out of stock`)
+      return
+    }
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id)
       if (existing) {

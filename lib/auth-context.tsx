@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { createClient } from "@/lib/supabase/client"
 import type { User } from "@supabase/supabase-js"
 import { Order, CartItem, AppUser } from "./types"
+import { CART_STORAGE_KEY, ORDERS_STORAGE_KEY } from "./constants"
 import { 
   getCurrentUser, 
   createUser, 
@@ -25,8 +26,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-const ORDERS_STORAGE_KEY = "ecommerce-orders"
 
 // Helper to convert LocalUser to AppUser
 function toAppUser(localUser: LocalUser): AppUser {
@@ -72,7 +71,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       try {
         const parsed = JSON.parse(stored)
         setOrders(parsed)
-      } catch {
+      } catch (error) {
+        console.error("Failed to load orders from localStorage:", error)
         localStorage.removeItem(`${ORDERS_STORAGE_KEY}-${user.id}`)
       }
     }
@@ -81,7 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Save orders to localStorage
   useEffect(() => {
     if (user && orders.length > 0) {
-      localStorage.setItem(`${ORDERS_STORAGE_KEY}-${user.id}`, JSON.stringify(orders))
+      try {
+        localStorage.setItem(`${ORDERS_STORAGE_KEY}-${user.id}`, JSON.stringify(orders))
+      } catch (error) {
+        console.error("Failed to save orders to localStorage:", error)
+      }
     }
   }, [orders, user])
 
@@ -183,6 +187,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       await supabase.auth.signOut()
     }
     clearSession()
+    localStorage.removeItem(CART_STORAGE_KEY)
     setUser(null)
     setOrders([])
   }
